@@ -1,8 +1,18 @@
 import React from 'react'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { HomePage, AboutPage, SignInPage, SignUpPage, ProfilePage } from './Routes'
 
 const App = () => {
   return (
-    <h1 className='text-red-500 flex-col'>App</h1>
+    <BrowserRouter>
+      <Routes >
+        <Route path="/" element={<HomePage/>}/>
+        <Route path="/about" element={<AboutPage/>}/>
+        <Route path="/sign-in" element={<SignInPage/>}/>
+        <Route path="/sign-up" element={<SignUpPage/>}/>
+        <Route path="/profile" element={<ProfilePage/>}/>
+      </Routes>
+    </BrowserRouter>
   )
 }
 
