@@ -4,7 +4,7 @@ const app = express();
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import * as dotenv from "dotenv";
-
+import authRoute from './user/auth/auth.router.js';
 //middlewares
 app.use(
   cors({
@@ -23,7 +23,9 @@ if (process.env.NODE_ENV !== "PRODUCTION") {
 }
 
 //import routes
+const APP_ROUTE = process.env.API_URL;
 
+app.use(`${APP_ROUTE}/auth`, authRoute);
 
 //For ErrorHandling
 app.use(ErrorHandler);
