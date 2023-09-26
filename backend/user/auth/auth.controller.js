@@ -14,6 +14,13 @@ export const createUser = async (req, res, next) => {
     const {username, email, password} = req.body;
 
     try {
+      const existingUsername = await User.findOne({username});
+      if (existingUsername)
+        return next(new ErrorHandler("Record already exist", 409));
+      const existingMail = await User.findOne({ email});
+      if (existingMail)
+        return next(new ErrorHandler("Record already exist", 409));
+
       const newUser = new User({username, email, password});
       await newUser.save();
 

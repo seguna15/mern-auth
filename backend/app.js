@@ -2,16 +2,10 @@ import express from "express";
 import ErrorHandler from "./middleware/error.middleware.js";
 const app = express();
 import cookieParser from "cookie-parser";
-import cors from "cors";
 import * as dotenv from "dotenv";
 import authRoute from './user/auth/auth.router.js';
 //middlewares
-app.use(
-  cors({
-    origin: "http://localhost:5173",
-    credentials: true,
-  })
-);
+
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));

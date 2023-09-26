@@ -1,16 +1,39 @@
 import { useState } from 'react'
 import {Link} from 'react-router-dom';
 import {FaEyeSlash, FaEye} from 'react-icons/fa';
-
+import axios from "axios";
 
 const SignUpPage = () => {
+  const [formData, setFormData] = useState({});
+  const [error, setError]  = useState(false);
+  const [loading, setLoading] = useState(false);
 
+  const handleChange = (e) => {
+    setFormData({...formData, [e.target.id]: e.target.value });
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setLoading(true)
+      const res = await axios.post('/api/v1/auth/signup', formData);
+      const data = res.data.message;
+      console.log(data);
+      setLoading(false);
+      setError(false);
+    } catch (error) {
+      setLoading(false);
+      setError(true);
+      console.log(error.response.data.message);
+    }
+  }
+  
   const [visible, setVisible] = useState(false);
   return (
     <main className="">
       <section className="p-3 max-w-lg mx-auto">
         <h1 className="text-3xl text-center font-semibold">Sign Up</h1>
-        <form className="flex flex-col gap-4">
+        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
           <div className="flex flex-col gap-2">
             <label htmlFor="username" className=" font-bold text-gray-500 ">
               Username
@@ -18,7 +41,9 @@ const SignUpPage = () => {
             <input
               type="text"
               placeholder="Username"
-              className="w-full bg-slate-100 p-3 rounded-lg "
+              className="w-full bg-slate-100 p-3 rounded-lg"
+              id="username"
+              onChange={handleChange}
             />
           </div>
           <div className="flex flex-col gap-2">
@@ -28,7 +53,9 @@ const SignUpPage = () => {
             <input
               type="email"
               placeholder="email"
-              className="w-full bg-slate-100 p-3 rounded-lg "
+              className="w-full bg-slate-100 p-3 rounded-lg"
+              id="email"
+              onChange={handleChange}
             />
           </div>
           <div className="flex flex-col gap-2">
@@ -39,7 +66,9 @@ const SignUpPage = () => {
               <input
                 type={visible ? "text" : "password"}
                 placeholder="password"
-                className="w-full bg-slate-100 p-3 rounded-lg "
+                className="w-full bg-slate-100 p-3 rounded-lg"
+                id="password"
+                onChange={handleChange}
               />
               <div className="absolute top-4 right-2">
                 {visible ? (
@@ -52,17 +81,19 @@ const SignUpPage = () => {
           </div>
           <button
             type="submit"
+            disabled={loading}
             className="bg-slate-700 text-white p-3 uppercase rounded-md hover:opacity-95 disabled:opacity-80"
           >
-            Sign Up
+            {loading ? "Loading..." : "Sign Up"}
           </button>
-          <div className="flex gap-2">
-            <p>Have an account?</p>
-            <Link to="/sign-in">
-              <span className="text-blue-500">Sign in</span>
-            </Link>
-          </div>
         </form>
+        <div className="flex gap-2 mt-5">
+          <p>Have an account?</p>
+          <Link to="/sign-in">
+            <span className="text-blue-500">Sign in</span>
+          </Link>
+        </div>
+        {error && <p className="text-red-700 mt-5">Something went wrong!</p>}
       </section>
     </main>
   );
