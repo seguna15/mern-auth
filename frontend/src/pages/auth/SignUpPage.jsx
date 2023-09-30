@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import {Link} from 'react-router-dom';
+import {Link, useNavigate} from 'react-router-dom';
 import {FaEyeSlash, FaEye} from 'react-icons/fa';
 import axios from "axios";
 
@@ -7,7 +7,7 @@ const SignUpPage = () => {
   const [formData, setFormData] = useState({});
   const [error, setError]  = useState(false);
   const [loading, setLoading] = useState(false);
-
+  const navigate = useNavigate();
   const handleChange = (e) => {
     setFormData({...formData, [e.target.id]: e.target.value });
   }
@@ -21,6 +21,7 @@ const SignUpPage = () => {
       console.log(data);
       setLoading(false);
       setError(false);
+      navigate("/sign-in");
     } catch (error) {
       setLoading(false);
       setError(true);
@@ -35,7 +36,7 @@ const SignUpPage = () => {
         <h1 className="text-3xl text-center font-semibold">Sign Up</h1>
         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
           <div className="flex flex-col gap-2">
-            <label htmlFor="username" className=" font-bold text-gray-500 ">
+            <label htmlFor="username" className=" font-bold text-gray-500 capitalize">
               Username
             </label>
             <input
@@ -47,7 +48,7 @@ const SignUpPage = () => {
             />
           </div>
           <div className="flex flex-col gap-2">
-            <label htmlFor="email" className=" font-bold text-gray-500 ">
+            <label htmlFor="email" className=" font-bold text-gray-500 capitalize">
               email
             </label>
             <input
@@ -59,7 +60,7 @@ const SignUpPage = () => {
             />
           </div>
           <div className="flex flex-col gap-2">
-            <label htmlFor="password" className=" font-bold text-gray-500 ">
+            <label htmlFor="password" className=" font-bold text-gray-500 capitalize">
               password
             </label>
             <div className="relative">
