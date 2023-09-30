@@ -1,6 +1,7 @@
 import Joi from "joi";
 import User from "../user.model.js";
 import ErrorHandler from "../../utils/ErrorHandler.js";
+import { sendAccessToken } from "../../utils/SendToken.js";
 
 export const createUser = async (req, res, next) => {
     const schema = Joi.object({
@@ -28,8 +29,21 @@ export const createUser = async (req, res, next) => {
     } catch (error) {
       return next(new ErrorHandler(error.message, 500));
     }
+}
 
+
+export const login = async (req, res, next) => {
+  const {email, password} = req.body;
+  try {
+    const validUser = await User.findOne({email});
+    if(!validUser) return next( new ErrorHandler('User not found', 404));
     
-  console.log(req.body);
-  return res.status(200).send(req.body);
+    const validPassword = await validUser.comparePassword(password);
+    if (!validPassword) return next( new ErrorHandler("Wrong credentials", 401));
+    const {password:hashedPassword,...rest} = validUser._doc;
+    await sendAccessToken(validUser, 201, res);
+    return res.status(200).json(rest);
+  } catch (error) {
+    return next(new ErrorHandler(error.message, 500));
+  }
 }
