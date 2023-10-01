@@ -2,12 +2,14 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaEyeSlash, FaEye } from "react-icons/fa";
 import axios from "axios";
+import { signInStart, signInSuccess, signInFailure } from "../../redux/user/userSlice";
+import { useDispatch, useSelector } from "react-redux";
 
 const SignInPage = () => {
   const [formData, setFormData] = useState({});
-  const [error, setError] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const {loading, error } = useSelector(state => state.user)
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -16,17 +18,13 @@ const SignInPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      setLoading(true);
+      dispatch(signInStart())
       const res = await axios.post("/api/v1/auth/login", formData, {withCredentials: true});
       const data = res.data;
-      console.log(data);
-      setLoading(false);
-      setError(false);
+      dispatch(signInSuccess(data))
       navigate('/');
     } catch (error) {
-      setLoading(false);
-      setError(true);
-      console.log(error.response.data.message);
+      dispatch(signInFailure(error.response.data));
     }
   };
 
@@ -83,7 +81,7 @@ const SignInPage = () => {
             <span className="text-blue-500">Sign up</span>
           </Link>
         </div>
-        {error && <p className="text-red-700 mt-5">Something went wrong!</p>}
+         <p className="text-red-700 mt-5">{error ? error.message || "Something went wrong!" : ""}</p>
       </section>
     </main>
   );
