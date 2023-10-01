@@ -2,6 +2,7 @@ import { useState } from 'react'
 import {Link, useNavigate} from 'react-router-dom';
 import {FaEyeSlash, FaEye} from 'react-icons/fa';
 import axios from "axios";
+import OAuth from '../../components/OAuth';
 
 const SignUpPage = () => {
   const [formData, setFormData] = useState({});
@@ -87,6 +88,7 @@ const SignUpPage = () => {
           >
             {loading ? "Loading..." : "Sign Up"}
           </button>
+          <OAuth/>
         </form>
         <div className="flex gap-2 mt-5">
           <p>Have an account?</p>

@@ -4,6 +4,7 @@ import { FaEyeSlash, FaEye } from "react-icons/fa";
 import axios from "axios";
 import { signInStart, signInSuccess, signInFailure } from "../../redux/user/userSlice";
 import { useDispatch, useSelector } from "react-redux";
+import OAuth from "../../components/OAuth";
 
 const SignInPage = () => {
   const [formData, setFormData] = useState({});
@@ -74,6 +75,7 @@ const SignInPage = () => {
           >
             {loading ? "Loading..." : "Sign Up"}
           </button>
+          <OAuth/>
         </form>
         <div className="flex gap-2 mt-5">
           <p>Do not have an account?</p>

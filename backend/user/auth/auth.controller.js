@@ -31,6 +31,35 @@ export const createUser = async (req, res, next) => {
     }
 }
 
+export const google = async (req, res, next) => {
+  try {
+    const user = await User.findOne({email: req.body.email});
+    if(user) {
+      await sendAccessToken(user, 201, res);
+      const { password: hashedPassword, ...rest } = user._doc;
+      return res.status(200).json(rest);
+    }else{
+      const generatedPassword =
+        Math.random().toString(36).slice(-8) +
+        Math.random().toString(36).slice(-8);
+
+      const newUser = new User({
+        username: req.body.name.split(" ").join("").toLowerCase() + Math.floor(Math.random() * 10000).toString(),
+        email: req.body.email,
+        password: generatedPassword,
+        profilePicture: req.body.photo,
+      });
+      await newUser.save();
+      await sendAccessToken(newUser, 201, res);
+      const { password: hashedPassword, ...rest } = newUser._doc;
+      return res.status(200).json(rest);
+    }
+  
+  } catch (error) {
+    return next(new ErrorHandler(error.message, 500));
+  }
+}
+
 
 export const login = async (req, res, next) => {
   const {email, password} = req.body;
