@@ -3,7 +3,7 @@ import ErrorHandler from "./middleware/error.middleware.js";
 const app = express();
 import cookieParser from "cookie-parser";
 import * as dotenv from "dotenv";
-import authRoute from './user/auth/auth.router.js';
+
 //middlewares
 
 app.use(express.json());
@@ -17,9 +17,13 @@ if (process.env.NODE_ENV !== "PRODUCTION") {
 }
 
 //import routes
+import authRoute from "./user/auth/auth.router.js";
+import userRoute from "./user/user.router.js";
+
 const APP_ROUTE = process.env.API_URL;
 
 app.use(`${APP_ROUTE}/auth`, authRoute);
+app.use(`${APP_ROUTE}/user`, userRoute);
 
 //For ErrorHandling
 app.use(ErrorHandler);
