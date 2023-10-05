@@ -19,7 +19,6 @@ connectDatabase();
 
 
 const PORT = process.env.PORT;
-console.log(PORT)
 
 //create Server
 const server = app.listen(PORT, () => {
