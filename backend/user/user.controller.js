@@ -2,7 +2,7 @@ import ErrorHandler from "../utils/ErrorHandler.js"
 import User from "./user.model.js";
 
 export const updateUser = async (req, res, next) => {
-    if(req.user.id !== req.params.id) return next(new ErrorHandler("You can only update your own account", 401));
+    if(req.user.id !== req.params.id) return next(new ErrorHandler("You can only update your own account", 403));
     try {
         const updatedUser = await User.findByIdAndUpdate(
             req.params.id, 
@@ -23,3 +23,14 @@ export const updateUser = async (req, res, next) => {
     }
 }
 
+
+export const deleteUser = async (req, res, next) => {
+    if(req.user.id !== req.params.id) return next(new ErrorHandler("You can only delete your own account", 403));
+
+    try{
+        await User.findByIdAndDelete(req.params.id);
+        res.status(200).json('User has been deleted...');
+    }catch(error){
+        return next(new ErrorHandler(error.message, 500));
+    }
+}

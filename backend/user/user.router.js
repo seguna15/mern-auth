@@ -1,11 +1,14 @@
 import express from "express";
-import { updateUser } from "./user.controller.js";
+import { updateUser, deleteUser } from "./user.controller.js";
 import { verifyToken } from "../middleware/verifyToken.js";
 import catchAsyncErrorsMiddleware from "../middleware/catchAsyncErrors.middleware.js";
 
 
 const router = express.Router();
 
-router.put("/update/:id", verifyToken, catchAsyncErrorsMiddleware(updateUser));
+router
+    .put("/:id", verifyToken, catchAsyncErrorsMiddleware(updateUser))
+    .delete("/:id", verifyToken, catchAsyncErrorsMiddleware(deleteUser))
+
 
 export default router;

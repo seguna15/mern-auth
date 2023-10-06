@@ -4,7 +4,7 @@ import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import {getDownloadURL, getStorage, ref, uploadBytesResumable} from "firebase/storage";
 import { app } from '../firebase';
 import axios from 'axios';
-import { updateUserFailure, updateUserStart, updateUserSuccess } from '../redux/user/userSlice';
+import { deleteUserFailure, deleteUserStart, deleteUserSuccess, updateUserFailure, updateUserStart, updateUserSuccess } from '../redux/user/userSlice';
 
 const Profile = () => {
   const {currentUser, loading, error, success} = useSelector(state => state.user);
@@ -14,9 +14,8 @@ const Profile = () => {
   const [imagePercent , setImagePercent] = useState(0);
   const [imageError, setImageError] = useState(false);
   const [formData, setFormData] = useState({});
-
-  const dispatch = useDispatch()
-
+  
+  const dispatch = useDispatch();
 
   //to upload image 
   const handleImageUpload = async (image) => {
@@ -57,7 +56,7 @@ const Profile = () => {
     e.preventDefault();
     try {
       dispatch(updateUserStart());
-      const res = await axios.put(`/api/v1/user/update/${currentUser._id}`, formData, {withCredentials: true});
+      const res = await axios.put(`/api/v1/user/${currentUser._id}`, formData, {withCredentials: true});
       const {data} = res;
       dispatch(updateUserSuccess(data));
     } catch (error) {
@@ -65,6 +64,16 @@ const Profile = () => {
     }
   }
 
+  const handleDeleteAccount = async (e) => {
+    e.preventDefault();
+    try {
+      dispatch(deleteUserStart())
+      await axios.delete(`/api/v1/user/${currentUser._id}`, {withCredentials: true});
+      dispatch(deleteUserSuccess())
+    } catch (error) {
+      dispatch(deleteUserFailure())
+    }
+  }
 
   http: return (
     <section className="p-3 max-w-lg mx-auto">
@@ -134,7 +143,7 @@ const Profile = () => {
         </button>
       </form>
       <div className="flex justify-between mt-5">
-        <span className="text-red-700 cursor-pointer">Delete Account</span>
+        <span onClick={handleDeleteAccount} className="text-red-700 cursor-pointer">Delete Account</span>
         <span className="text-red-700 cursor-pointer">Sign out</span>
       </div>
       <p className="text-red-700 mt-5">{error && "Something went wrong!"}</p>
