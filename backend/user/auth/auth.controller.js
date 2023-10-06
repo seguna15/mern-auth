@@ -76,3 +76,7 @@ export const login = async (req, res, next) => {
     return next(new ErrorHandler(error.message, 500));
   }
 }
+
+export const logout = async (req, res, next) => {
+  res.clearCookie("mernAuthToken").status(200).json({message: 'Logged out successfully'});
+}

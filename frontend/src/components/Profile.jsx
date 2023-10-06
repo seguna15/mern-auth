@@ -4,7 +4,7 @@ import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import {getDownloadURL, getStorage, ref, uploadBytesResumable} from "firebase/storage";
 import { app } from '../firebase';
 import axios from 'axios';
-import { deleteUserFailure, deleteUserStart, deleteUserSuccess, updateUserFailure, updateUserStart, updateUserSuccess } from '../redux/user/userSlice';
+import { deleteUserFailure, deleteUserStart, deleteUserSuccess, signOut, updateUserFailure, updateUserStart, updateUserSuccess } from '../redux/user/userSlice';
 
 const Profile = () => {
   const {currentUser, loading, error, success} = useSelector(state => state.user);
@@ -64,8 +64,8 @@ const Profile = () => {
     }
   }
 
-  const handleDeleteAccount = async (e) => {
-    e.preventDefault();
+  const handleDeleteAccount = async () => {
+   
     try {
       dispatch(deleteUserStart())
       await axios.delete(`/api/v1/user/${currentUser._id}`, {withCredentials: true});
@@ -75,7 +75,18 @@ const Profile = () => {
     }
   }
 
-  http: return (
+  const handleSignOut =  async () => {
+    try {
+      await axios.post(`/api/v1/auth/logout`, {
+        withCredentials: true,
+      });
+      dispatch(signOut());
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  return (
     <section className="p-3 max-w-lg mx-auto">
       <h1 className="text-3xl font-semibold text-center my-7">Profile</h1>
       <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
@@ -144,7 +155,7 @@ const Profile = () => {
       </form>
       <div className="flex justify-between mt-5">
         <span onClick={handleDeleteAccount} className="text-red-700 cursor-pointer">Delete Account</span>
-        <span className="text-red-700 cursor-pointer">Sign out</span>
+        <span onClick={handleSignOut} className="text-red-700 cursor-pointer">Sign out</span>
       </div>
       <p className="text-red-700 mt-5">{error && "Something went wrong!"}</p>
       <p className="text-green-700 mt-5">
