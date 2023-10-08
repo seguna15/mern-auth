@@ -146,7 +146,7 @@ export const login = async (req, res, next) => {
     if(!validUser) return next( new ErrorHandler('User not found', 404));
     
     const validPassword = await validUser.comparePassword(password);
-    if (!validPassword) return next( new ErrorHandler("Wrong credentials", 401));
+    if (!validPassword) return next( new ErrorHandler("Wrong credentials", 403));
     
     const newRefreshToken = await sendToken(
       validUser,
@@ -191,12 +191,12 @@ export const login = async (req, res, next) => {
 
 export const refreshToken = async (req, res, next) => {
   const cookies = req.cookies;
-  if(!cookies?.MERNAuthToken) return next(new ErrorHandler('Unauthenticated user', 401));
+  if(!cookies?.MERNAuthToken) return next(new ErrorHandler('Unauthenticated user', 403));
   try {
     const refreshToken = cookies.MERNAuthToken;
 
     const foundUser = await User.findOne({ refreshToken });
-
+    
     //detected reuse
     if (!foundUser) {
       await verifyHackedUser(refreshToken, next);

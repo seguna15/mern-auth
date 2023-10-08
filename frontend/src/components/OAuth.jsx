@@ -22,7 +22,8 @@ const OAuth = () => {
         photo: result.user.photoURL,
       });
       
-      const {rest} = res.data;
+      const {rest, accessToken} = res.data;
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
       
       dispatch(signInSuccess(rest));
       navigate("/");
