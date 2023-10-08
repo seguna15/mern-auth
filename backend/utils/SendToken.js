@@ -1,10 +1,5 @@
-export const sendAccessToken = async (user, statusCode, res) => {
-    const token = user.getJwtAccessToken();
+export const sendToken = async (user, secret, expirationTime) => {
+    const token = await user.getJwtAccessToken(secret, expirationTime);
 
-    const options = {
-      httpOnly: true,
-      expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
-    };
-
-    res.status(statusCode).cookie("mernAuthToken", token, options);
+    return token;
 }

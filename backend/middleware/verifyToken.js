@@ -2,15 +2,16 @@ import jwt from "jsonwebtoken";
 import ErrorHandler from "../utils/ErrorHandler.js";
 
 export const verifyToken = (req, res, next) => {
-    const token = req.cookies.mernAuthToken;
+    const authHeader = req.headers.authorization || req.headers.Authorization;
+    if (!authHeader?.startsWith("Bearer ")) return res.sendStatus(401);
 
-    if(!token) return next(new ErrorHandler("Unauthenticated user", 401));;
-
+    const token = authHeader.split(' ')[1];
+    
     //verify to return either error or the user
-    jwt.verify(token, process.env.JWT_SECRET_KEY, (err, user) => {
-        if (err) return next(new ErrorHandler("Token is not valid", 403));
+    jwt.verify(token, process.env.REFRESH_SECRET_KEY, (err, user) => {
+      if (err) return next(new ErrorHandler("Token is not valid", 401));
 
-        req.user = user;
-        next();
+      req.user = user;
+      next();
     });
 }

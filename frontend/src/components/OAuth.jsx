@@ -22,9 +22,9 @@ const OAuth = () => {
         photo: result.user.photoURL,
       });
       
-      const {data} = res;
+      const {rest} = res.data;
       
-      dispatch(signInSuccess(data));
+      dispatch(signInSuccess(rest));
       navigate("/");
     } catch (error) {
       dispatch(signInFailure(error.response.data));

@@ -1,7 +1,9 @@
 import Joi from "joi";
 import User from "../user.model.js";
 import ErrorHandler from "../../utils/ErrorHandler.js";
-import { sendAccessToken } from "../../utils/SendToken.js";
+import { sendToken } from "../../utils/SendToken.js";
+import { sendAuthCookie } from "../../utils/createAuthCookie.js";
+import { verifyHackedUser, verifyRefreshToken } from "./auth.service.js";
 
 export const createUser = async (req, res, next) => {
     const schema = Joi.object({
@@ -32,12 +34,49 @@ export const createUser = async (req, res, next) => {
 }
 
 export const google = async (req, res, next) => {
+  const cookies = req.cookies;
   try {
     const user = await User.findOne({email: req.body.email});
     if(user) {
-      await sendAccessToken(user, 201, res);
-      const { password: hashedPassword, ...rest } = user._doc;
-      return res.status(200).json(rest);
+       await user.save();
+       const newRefreshToken = await sendToken(
+         user,
+         process.env.REFRESH_SECRET_KEY,
+         process.env.REFRESH_EXPIRES
+       );
+
+       const accessToken = await sendToken(
+         user,
+         process.env.ACCESS_SECRET_KEY,
+         process.env.ACCESS_EXPIRES
+       );
+       let newRefreshTokenArray = !cookies?.MERNAuthToken
+         ? user.refreshToken
+         : user.refreshToken.filter((rt) => rt !== cookies.MERNAuthToken);
+
+       if (cookies?.MERNAuthToken) {
+         const refreshToken = cookies.MERNAuthToken;
+         const foundToken = await User.findOne({ refreshToken });
+
+         if (!foundToken) {
+           newRefreshTokenArray = [];
+         }
+
+         res.clearCookie("MERNAuthToken", { httpOnly: true });
+       }
+
+       user.refreshToken = [...newRefreshTokenArray, newRefreshToken];
+       await user.save();
+
+       const {
+         password: hashedPassword,
+         refreshToken,
+         ...rest
+       } = user._doc;
+
+       await sendAuthCookie(newRefreshToken, 201, res);
+
+       return res.status(200).json({ rest, accessToken });
     }else{
       const generatedPassword =
         Math.random().toString(36).slice(-8) +
@@ -50,9 +89,44 @@ export const google = async (req, res, next) => {
         profilePicture: req.body.photo,
       });
       await newUser.save();
-      await sendAccessToken(newUser, 201, res);
-      const { password: hashedPassword, ...rest } = newUser._doc;
-      return res.status(200).json(rest);
+       const newRefreshToken = await sendToken(
+         newUser,
+         process.env.REFRESH_SECRET_KEY,
+         process.env.REFRESH_EXPIRES
+       );
+
+       const accessToken = await sendToken(
+         newUser,
+         process.env.ACCESS_SECRET_KEY,
+         process.env.ACCESS_EXPIRES
+       );
+      let newRefreshTokenArray = !cookies?.MERNAuthToken
+        ? newUser.refreshToken
+        : newUser.refreshToken.filter((rt) => rt !== cookies.MERNAuthToken);
+
+      if (cookies?.MERNAuthToken) {
+        const refreshToken = cookies.MERNAuthToken;
+        const foundToken = await User.findOne({ refreshToken });
+
+        if (!foundToken) {
+          newRefreshTokenArray = [];
+        }
+
+        res.clearCookie("MERNAuthToken", { httpOnly: true });
+      }
+
+      newUser.refreshToken = [...newRefreshTokenArray, newRefreshToken];
+      await newUser.save();
+
+      const {
+        password: hashedPassword,
+        refreshToken,
+        ...rest
+      } = newUser._doc;
+
+      await sendAuthCookie(newRefreshToken, 201, res);
+
+      return res.status(200).json({ rest, accessToken });
     }
   
   } catch (error) {
@@ -60,23 +134,109 @@ export const google = async (req, res, next) => {
   }
 }
 
-
 export const login = async (req, res, next) => {
+  const cookies = req.cookies;
   const {email, password} = req.body;
+   if (!email || !password)
+     return res
+       .status(400)
+       .json({ message: "Username and password are required." });
   try {
     const validUser = await User.findOne({email});
     if(!validUser) return next( new ErrorHandler('User not found', 404));
     
     const validPassword = await validUser.comparePassword(password);
     if (!validPassword) return next( new ErrorHandler("Wrong credentials", 401));
-    const {password:hashedPassword,...rest} = validUser._doc;
-    await sendAccessToken(validUser, 201, res);
-    return res.status(200).json(rest);
+    
+    const newRefreshToken = await sendToken(
+      validUser,
+      process.env.REFRESH_SECRET_KEY,
+      process.env.REFRESH_EXPIRES
+    );
+
+    const accessToken = await sendToken(
+      validUser,
+      process.env.ACCESS_SECRET_KEY,
+      process.env.ACCESS_EXPIRES
+    );
+
+    //if no cookies keep the refreshTokens but if there is cookies only keep the ones that do not match the cookies
+    let newRefreshTokenArray = !cookies?.MERNAuthToken ? validUser.refreshToken : validUser.refreshToken.filter((rt) =>  rt !== cookies.MERNAuthToken)
+    
+    if(cookies?.MERNAuthToken){
+      const refreshToken = cookies.MERNAuthToken;
+      const foundToken = await User.findOne({refreshToken});
+
+      if(!foundToken){
+        newRefreshTokenArray = [];
+      }
+
+      res
+        .clearCookie("MERNAuthToken", {httpOnly: true});
+        
+    }
+
+    validUser.refreshToken = [...newRefreshTokenArray, newRefreshToken];
+    await validUser.save();
+
+    const { password: hashedPassword, refreshToken, ...rest } = validUser._doc;
+
+    await sendAuthCookie(newRefreshToken, 201, res);
+  
+    return res.status(200).json({rest, accessToken});
   } catch (error) {
     return next(new ErrorHandler(error.message, 500));
   }
 }
 
+export const refreshToken = async (req, res, next) => {
+  const cookies = req.cookies;
+  if(!cookies?.MERNAuthToken) return next(new ErrorHandler('Unauthenticated user', 401));
+  try {
+    const refreshToken = cookies.MERNAuthToken;
+
+    const foundUser = await User.findOne({ refreshToken });
+
+    //detected reuse
+    if (!foundUser) {
+      await verifyHackedUser(refreshToken, next);
+      return next(new ErrorHandler("Token is not valid", 403));
+    }
+
+    const newRefreshArrayToken = foundUser.refreshToken.filter(
+      (rt) => rt !== refreshToken
+    );
+
+    await verifyRefreshToken(
+      refreshToken,
+      foundUser,
+      newRefreshArrayToken,
+      res,
+      next
+    );
+  } catch (error) {
+    return next(new ErrorHandler(error.message, 500));
+  }
+  
+}
+
+
+
 export const logout = async (req, res, next) => {
-  res.clearCookie("mernAuthToken").status(200).json({message: 'Logged out successfully'});
+  const cookies = req.cookies;
+  if(!cookies?.MERNAuthToken) return res.status(204).json({ message: "Logged out successfully" });
+  try {
+    const refreshToken = cookies.MERNAuthToken;
+    const foundUser = await User.findOne({refreshToken});
+    if(!foundUser) {
+      res.clearCookie("MERNAuthToken")
+      return res.status(204).json({ message: "Logged out successfully" });
+    } 
+    foundUser.refreshToken = foundUser.refreshToken.filter(rt => rt !== refreshToken);
+    await foundUser.save();
+    res.clearCookie("MERNAuthToken").status(204).json({ message: "Logged out successfully" });
+
+  } catch (error) {
+    return next(new ErrorHandler(error.message, 500));
+  }
 }

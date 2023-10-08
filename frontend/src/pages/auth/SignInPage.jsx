@@ -21,8 +21,8 @@ const SignInPage = () => {
     try {
       dispatch(signInStart())
       const res = await axios.post("/api/v1/auth/login", formData, {withCredentials: true});
-      const data = res.data;
-      dispatch(signInSuccess(data))
+      const {rest} = res.data;
+      dispatch(signInSuccess(rest))
       navigate('/');
     } catch (error) {
       dispatch(signInFailure(error.response.data));
