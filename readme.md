@@ -33,6 +33,11 @@ cd frontend && npm install
 
 2. Set up firebase app. [How to set up a firebase app](https://firebase.google.com/docs/web/setup)
 
+3. To run frontend in development mode
+
+``` bash
+npm run dev
+```
 
 ### Routes
 
