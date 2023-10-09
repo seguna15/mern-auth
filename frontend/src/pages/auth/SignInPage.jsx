@@ -20,13 +20,14 @@ const SignInPage = () => {
     e.preventDefault();
     try {
       dispatch(signInStart())
-      const res = await axios.post("/api/v1/auth/login", formData, {withCredentials: true});
+      const res = await axios.post("/auth/login", formData, {withCredentials: true});
+      
       const { rest, accessToken } = res.data;
+      
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
       dispatch(signInSuccess(rest))
       navigate('/');
     } catch (error) {
-      console.log(error);
       dispatch(signInFailure(error.response.data));
     }
   };

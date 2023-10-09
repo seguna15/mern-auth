@@ -3,6 +3,7 @@ import ErrorHandler from "./middleware/error.middleware.js";
 const app = express();
 import cookieParser from "cookie-parser";
 import * as dotenv from "dotenv";
+import cors from "cors";
 
 //middlewares
 
@@ -10,7 +11,12 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 //app.use("/", express.static("uploads"));
-
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "http://localhost:3000"],
+    credentials: true,
+  })
+);
 // config
 if (process.env.NODE_ENV !== "PRODUCTION") {
   dotenv.config();

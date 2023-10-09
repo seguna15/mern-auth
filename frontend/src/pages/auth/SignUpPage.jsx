@@ -17,9 +17,7 @@ const SignUpPage = () => {
     e.preventDefault();
     try {
       setLoading(true)
-      const res = await axios.post('/api/v1/auth/signup', formData);
-      const data = res.data.message;
-      console.log(data);
+      const res = await axios.post('/auth/signup', formData);
       setLoading(false);
       setError(false);
       navigate("/sign-in");

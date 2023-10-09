@@ -56,11 +56,11 @@ const Profile = () => {
     e.preventDefault();
     try {
       dispatch(updateUserStart());
-      const res = await axios.put(`/api/v1/user/${currentUser._id}`, formData, {withCredentials: true});
+      const res = await axios.put(`/user/${currentUser._id}`, formData, {withCredentials: true});
       const {data} = res;
       dispatch(updateUserSuccess(data));
     } catch (error) {
-      dispatch(updateUserFailure(error.response.data));
+      dispatch(updateUserFailure(error));
     }
   }
 
@@ -68,7 +68,7 @@ const Profile = () => {
    
     try {
       dispatch(deleteUserStart())
-      await axios.delete(`/api/v1/user/${currentUser._id}`, {withCredentials: true});
+      await axios.delete(`/user/${currentUser._id}`, {withCredentials: true});
       dispatch(deleteUserSuccess())
     } catch (error) {
       dispatch(deleteUserFailure())
@@ -77,7 +77,7 @@ const Profile = () => {
 
   const handleSignOut =  async () => {
     try {
-      await axios.post(`/api/v1/auth/logout`, {
+      await axios.post(`/auth/logout`, {
         withCredentials: true,
       });
       dispatch(signOut());

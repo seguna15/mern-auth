@@ -137,10 +137,7 @@ export const google = async (req, res, next) => {
 export const login = async (req, res, next) => {
   const cookies = req.cookies;
   const {email, password} = req.body;
-   if (!email || !password)
-     return res
-       .status(400)
-       .json({ message: "Username and password are required." });
+   if (!email || !password) return next(new ErrorHandler("Username and password are required.", 400));
   try {
     const validUser = await User.findOne({email});
     if(!validUser) return next( new ErrorHandler('User not found', 404));
