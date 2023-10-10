@@ -68,7 +68,8 @@ const Profile = () => {
    
     try {
       dispatch(deleteUserStart())
-      await axios.delete(`/user/${currentUser._id}`, {withCredentials: true});
+      await axios.delete(`/user/${currentUser._id}`, {}, {withCredentials: true});
+      localStorage.removeItem("authToken");
       dispatch(deleteUserSuccess())
     } catch (error) {
       dispatch(deleteUserFailure())
@@ -77,9 +78,10 @@ const Profile = () => {
 
   const handleSignOut =  async () => {
     try {
-      await axios.post(`/auth/logout`, {
+      await axios.post(`/auth/logout`, {}, {
         withCredentials: true,
       });
+      localStorage.removeItem("authToken")
       dispatch(signOut());
     } catch (error) {
       console.log(error);

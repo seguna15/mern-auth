@@ -23,8 +23,7 @@ const SignInPage = () => {
       const res = await axios.post("/auth/login", formData, {withCredentials: true});
       
       const { rest, accessToken } = res.data;
-      
-      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+      localStorage.setItem("authToken", accessToken);
       dispatch(signInSuccess(rest))
       navigate('/');
     } catch (error) {

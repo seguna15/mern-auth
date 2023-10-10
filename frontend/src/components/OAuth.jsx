@@ -20,11 +20,10 @@ const OAuth = () => {
         name: result.user.displayName,
         email: result.user.email,
         photo: result.user.photoURL,
-      });
+      }, {withCredentials: true});
       
       const {rest, accessToken} = res.data;
-      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
-      
+      localStorage.setItem("authToken", accessToken); 
       dispatch(signInSuccess(rest));
       navigate("/");
     } catch (error) {
