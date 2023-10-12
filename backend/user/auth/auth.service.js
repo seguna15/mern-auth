@@ -39,3 +39,11 @@ export const verifyRefreshToken = (refreshToken, user, newRefreshTokenArray, res
 
     });
 }
+
+export const createResetToken =  (user) => {
+  
+  const payload = {id: user._id, email: user.email}
+  const token = jwt.sign(payload,process.env.RESET_SECRET, {expiresIn: '10m'} );
+
+  return token;
+}

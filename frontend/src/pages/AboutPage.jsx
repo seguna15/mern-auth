@@ -1,14 +1,16 @@
 import React from 'react'
 import Header from '../components/Header'
-import About from '../components/About'
+import MainContent from '../components/MainContent';
 
 const AboutPage = () => {
+  const title = "About";
   return (
     <>
-        <Header/>     
-        <About/>
+      <Header />
+      <MainContent title={title}/>
+      
     </>
-  )
+  );
 }
 
 export default AboutPage

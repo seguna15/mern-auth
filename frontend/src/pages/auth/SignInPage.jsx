@@ -33,12 +33,15 @@ const SignInPage = () => {
 
   const [visible, setVisible] = useState(false);
   return (
-    <main className="mt-5">
-      <section className="p-3 max-w-lg mx-auto">
+    <main className="h-[100vh] flex justify-center items-center">
+      <section className="p-3 max-w-lg w-full">
         <h1 className="text-3xl text-center font-semibold">Sign In</h1>
         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
           <div className="flex flex-col gap-2">
-            <label htmlFor="email" className=" font-bold text-gray-500 capitalize ">
+            <label
+              htmlFor="email"
+              className=" font-bold text-gray-500 capitalize "
+            >
               email
             </label>
             <input
@@ -50,7 +53,10 @@ const SignInPage = () => {
             />
           </div>
           <div className="flex flex-col gap-2">
-            <label htmlFor="password" className=" font-bold text-gray-500 capitalize">
+            <label
+              htmlFor="password"
+              className=" font-bold text-gray-500 capitalize"
+            >
               password
             </label>
             <div className="relative">
@@ -77,15 +83,25 @@ const SignInPage = () => {
           >
             {loading ? "Loading..." : "Sign In"}
           </button>
-          <OAuth/>
+          <OAuth />
         </form>
-        <div className="flex gap-2 mt-5">
-          <p>Do not have an account?</p>
-          <Link to="/sign-up">
-            <span className="text-blue-500">Sign up</span>
+        <div className="flex flex-col md:flex-row  gap-2 justify-between mt-5">
+          <div className="flex   gap-2">
+            <p>Do not have an account?</p>
+            <Link to="/sign-up">
+              <span className="text-blue-500 hover:text-blue-400">Sign up</span>
+            </Link>
+          </div>
+          <Link
+            to="/forgot-password"
+            className="text-blue-500 hover:text-blue-400"
+          >
+            Forgot password?
           </Link>
         </div>
-         <p className="text-red-700 mt-5">{error ? error.message || "Something went wrong!" : ""}</p>
+        <p className="text-red-700 mt-5">
+          {error ? error.message || "Something went wrong!" : ""}
+        </p>
       </section>
     </main>
   );

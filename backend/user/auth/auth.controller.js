@@ -3,7 +3,9 @@ import User from "../user.model.js";
 import ErrorHandler from "../../utils/ErrorHandler.js";
 import { sendToken } from "../../utils/SendToken.js";
 import { sendAuthCookie } from "../../utils/createAuthCookie.js";
-import { verifyHackedUser, verifyRefreshToken } from "./auth.service.js";
+import { createResetToken, verifyHackedUser, verifyRefreshToken } from "./auth.service.js";
+import { sendMail } from "../../utils/sendMail.js";
+import jwt from "jsonwebtoken";
 
 export const createUser = async (req, res, next) => {
     const schema = Joi.object({
@@ -217,8 +219,6 @@ export const refreshToken = async (req, res, next) => {
   
 }
 
-
-
 export const logout = async (req, res, next) => {
   const cookies = req.cookies;
   if(!cookies?.MERNAuthToken) return res.status(204).json({ message: "Logged out successfully" });
@@ -236,4 +236,61 @@ export const logout = async (req, res, next) => {
   } catch (error) {
     return next(new ErrorHandler(error.message, 500));
   }
+}
+
+export const forgotPassword = async (req, res, next) => {
+  const {email} = req.body;
+  if(!email) return next(new ErrorHandler('Kindly enter email', 400));
+
+  try {
+    const validUser = await User.findOne({ email });
+    if (!validUser) return next(new ErrorHandler("User not found", 404));
+
+    //create token
+    const resetToken = createResetToken(validUser);
+    validUser.resetToken = resetToken;
+    await validUser.save();
+
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${validUser.email}/${resetToken}`;
+    
+    await sendMail({
+      email: validUser.email,
+      subject: "Activate your account",
+      message: `Hello ${validUser.username}, click on the link to reset password ${resetUrl}`,
+    }); 
+    return res.status(201).json({
+      success: true,
+      message: `Kindly check your email ${validUser.email} to reset password`,
+    });
+     
+    
+  } catch (error) {
+    return next(new ErrorHandler(error.message, 500));
+  }
+}
+
+export const resetPassword = async(req, res, next) => {
+  const {email, token, password} = req.body;
+  
+  try {
+    const verifyToken = jwt.verify(token, process.env.RESET_SECRET);
+
+    if (!verifyToken) return next(new ErrorHandler("Token is not valid", 403));
+   
+    const foundToken = await User.findOne({ token });
+    if (!foundToken) return next(new ErrorHandler("User does not exist", 404));
+  
+    //if(!updatedUser) return next(new ErrorHandler("User does not exist", 404));
+    const user = await User.findOne({email});
+    if (!user) return next(new ErrorHandler("User does not exist", 404));
+
+    user.password = password;
+    await user.save();
+   
+    return res.status(201).json({success: true, message: "Password updated successfully"});
+  } catch (error) {
+    return next(new ErrorHandler(error.message, 500));
+  }
+  
+  
 }
